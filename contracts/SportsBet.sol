@@ -9,8 +9,10 @@ contract SportsBet is Owned {
         uint amount;
     }
         
+    // a identifier for the game to bet on
     string public game;
     
+    bool public locked;
     uint public winningTip;
     uint public total;
     uint[3] amounts;
@@ -19,9 +21,10 @@ contract SportsBet is Owned {
 
     function SportsBet(string _game) {        
         game = _game;
+        locked = false;
     }
 
-    function bet(uint tip) payable {
+    function bet(uint tip) unlocked payable {
         tip = checkTip(tip);
 
         // if sender already did a bet, the
@@ -52,6 +55,10 @@ contract SportsBet is Owned {
         return false;
     }
 
+    function lockBet() ownerOnly {
+        locked = true;
+    }
+
     function finalizeBet(uint _winningTip) ownerOnly {
         winningTip = checkTip(_winningTip);
     }
@@ -76,7 +83,7 @@ contract SportsBet is Owned {
         @param tip tip to be checked
         @return a valid tip
     */
-    function checkTip(uint tip) returns (uint) {
+    function checkTip(uint tip) internal returns (uint) {
         if (tip < 1) {
             tip = 1;
         } else if (tip > 3) {
@@ -84,6 +91,11 @@ contract SportsBet is Owned {
         }
 
         return tip;
+    }
+
+    modifier unlocked() {
+        require(!locked);
+        _;
     }
 
 }

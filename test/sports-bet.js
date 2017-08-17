@@ -2,12 +2,16 @@ let SportsBet = artifacts.require("./SportsBet.sol");
 
 contract('SportsBet', function(accounts) {
 
+    it('Should not be possible to bet on a locked bet', function() {
+
+    });
+
     it('Adding some bets and check the states', function() {
         let sportsBet;
         let bets = [123445, 2356, 9984785];
         bets[3] = bets[0] + bets[1] + bets[2];
 
-        return SportsBet.deployed().then((instance) => {
+        return SportsBet.new('WM 2014; 13.07.2014; Deutschland - Argentinien').then((instance) => {
             sportsBet = instance;
             return Promise.all([
                 sportsBet.bet(1, { from:accounts[1] , value:bets[0] }) ,

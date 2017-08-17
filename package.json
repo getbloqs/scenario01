@@ -4,8 +4,7 @@
   "description": "Scenario 01: Smart contract for a sports bet",
   "main": "index.js",
   "scripts": {
-    "testrpc" : "testrpc" ,
-    "test": "cd solidity && truffle test"
+    "test": "testrpc & TESTRPC=$! && sleep 2 && truffle test && kill $TESTRPC"
   },
   "repository": {
     "type": "git",
@@ -22,5 +21,9 @@
   "bugs": {
     "url": "https://github.com/getbloqs/scenario01/issues"
   },
-  "homepage": "https://github.com/getbloqs/scenario01#readme"
+  "homepage": "https://github.com/getbloqs/scenario01#readme",
+  "devDependencies": {
+    "ethereumjs-testrpc": "^4.0.1",
+    "truffle": "^3.4.9"
+  }
 }
