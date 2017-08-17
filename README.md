@@ -9,4 +9,4 @@
 
 ## Testing
 
-Tests for the smart contracts are included and can be run with truffle. Therefore a running instance of testrpc is required. This can be done by running `npm run testrpc`. Either run this in the background with `&` or open another terminal and trigger `npm test` to run the tests.
+Tests for the smart contracts are included and can be run with truffle. Therefore a running instance of testrpc is required. This can be done by running `testrpc`. Either run this in the background with `&` or open another terminal and trigger `truffle test` to run the tests. All steps are combined for bash environments by running `npm test`.
