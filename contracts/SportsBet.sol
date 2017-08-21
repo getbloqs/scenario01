@@ -41,13 +41,13 @@ contract SportsBet is Owned {
     function payout() returns (bool) {
         // if bet is finalized and sender made a winning tip
         if (winningTip > 0 && bets[msg.sender].tip == winningTip && bets[msg.sender].amount > 0) {
-            uint payout = bets[msg.sender].amount * odds(winningTip) / 100;
+            uint out = bets[msg.sender].amount * odds(winningTip) / 100;
 
             // payout can only be done if there is more in the contracts balance
-            if (this.balance >= payout) {
+            if (this.balance >= out) {
                 bets[msg.sender].tip = 0;
                 bets[msg.sender].amount = 0;
-                msg.sender.transfer(payout);
+                msg.sender.transfer(out);
                 return true;
             }            
         }
@@ -63,11 +63,11 @@ contract SportsBet is Owned {
         winningTip = checkTip(_winningTip);
     }
 
-    function getBet(address _betOwner) constant returns (uint tip, uint amount) {
+    function getBet(address _betOwner) constant returns (uint, uint) {
         return (bets[_betOwner].tip, bets[_betOwner].amount);
     }
 
-    function getTipAmount(uint tip) constant returns (uint total) {
+    function getTipAmount(uint tip) constant returns (uint) {
         tip = checkTip(tip);
         return amounts[tip-1];
     }
