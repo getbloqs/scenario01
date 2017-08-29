@@ -4,6 +4,8 @@ import './Owned.sol';
 
 contract SportsBet is Owned {
 
+    enum BetState { Open, Locked, Finalized }
+
     struct Bet {        
         uint tip;
         uint amount;
@@ -33,26 +35,25 @@ contract SportsBet is Owned {
             bets[msg.sender].tip = tip;
         }      
         bets[msg.sender].amount += msg.value;
-
         amounts[bets[msg.sender].tip-1] += msg.value;
         total += msg.value;
     }
 
-    function payout() returns (bool) {
+    function payout() {
         // if bet is finalized and sender made a winning tip
-        if (winningTip > 0 && bets[msg.sender].tip == winningTip && bets[msg.sender].amount > 0) {
-            uint out = bets[msg.sender].amount * odds(winningTip) / 100;
+        require(
+            winningTip > 0 &&
+            bets[msg.sender].tip == winningTip &&
+            bets[msg.sender].amount > 0
+        );
 
-            // payout can only be done if there is more in the contracts balance
-            if (this.balance >= out) {
-                bets[msg.sender].tip = 0;
-                bets[msg.sender].amount = 0;
-                msg.sender.transfer(out);
-                return true;
-            }            
-        }
+        uint out = bets[msg.sender].amount * odds(winningTip) / 100;
 
-        return false;
+        // payout can only be done if there is more in the contracts balance
+        if (this.balance >= out) {
+            bets[msg.sender].amount = 0;
+            msg.sender.transfer(out);
+        }      
     }
 
     function lockBet() ownerOnly {
@@ -70,6 +71,16 @@ contract SportsBet is Owned {
     function getTipAmount(uint tip) constant returns (uint) {
         tip = checkTip(tip);
         return amounts[tip-1];
+    }
+
+    function getBetState() constant returns (BetState) {
+        if (locked && winningTip > 0) {
+            return BetState.Finalized;
+        } else if (locked) {
+            return BetState.Locked; 
+        } else {
+            return BetState.Open;
+        }
     }
 
     function odds(uint tip) constant returns(uint) {

@@ -1,0 +1,111 @@
+<ion-header>
+  <ion-navbar>
+    <ion-title>
+      Sportwetten
+    </ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content padding>
+
+  <ion-card *ngIf="!web3">
+      <ion-item text-wrap>
+        <ion-avatar item-start>
+          <ion-icon color="danger" name="alert"></ion-icon>            
+        </ion-avatar>
+        <h2>Nutzungshinweis</h2>
+        <p>Um diese Anwendung nutzen zu können wird das Browser Plugin <a target="_blank" href="https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn">MetaMask</a> benötigt. Diese Anwendung soll am Beispiel von Sportwetten die Funktionsweise von Smart Contracts demonstrieren. Der <a target="_blank" href="https://ropsten.etherscan.io/address/0xbee0dd7967b85cb83edff86d21df641a09ff9bb0">Smart Contract</a> wird im Ethereum Testnetzwerk (Ropsten) betrieben. Mittels einer sog. Faucet können Ethereum Ropsten Tokens kostenlos bezogen werden und damit kann an der Sportwette teilgenommen werden.</p>
+
+        <ol>
+          <li>Download des MetaMask Chrome Plugins</li>
+          <li>Ropsten Test Network auswählen im MetaMask Plugin</li>
+          <li>Über den Button "Buy" kostenlos Ethereum Testnet Token beziehen</li>
+          <li>Seite neu Laden und Wetteinsatz plazieren</li>          
+        </ol>
+      </ion-item>     
+    
+  </ion-card>
+
+  <ion-card *ngIf="web3">
+      <ion-item text-wrap>
+          <ion-avatar item-start>
+            <ion-icon color="danger" name="alert"></ion-icon>            
+          </ion-avatar>
+          <h2>Nutzungshinweis</h2>
+          <ul>
+            <li>Bis zum Spielbeginn (02.09.2017, 20:45) können Wetten abgegeben werden. (Status: Offen)</li>
+            <li>Nach Spielbeginn wird der Status auf 'Gesperrt' gesetzt und es können keine Wetten mehr abgeschlossen werden.</li>
+            <li>Nach Spielende können Wettgewinne ausgezahlt werden. (Status: Finalisiert)</li>
+          </ul>
+        </ion-item>     
+  </ion-card>
+
+  <ion-card *ngIf="web3">
+    <ion-card-header>
+        {{ sportsBet.name }}
+    </ion-card-header>
+    
+    <ion-list>
+      <ion-item>
+        <ion-note item-start>
+          Gesamter Wetteinsatz: {{ sportsBet.total }} ETH<br>
+          Status: {{ state }}<br>
+          Smart Contract: <a target="_blank" href="https://ropsten.etherscan.io/address/0xbee0dd7967b85cb83edff86d21df641a09ff9bb0">0xbee0dd7967b85cb83edff86d21df641a09ff9bb0</a><br>
+          Ersteller: <a target="_blank" [href]="'https://ropsten.etherscan.io/address/' + sportsBet.owner">{{ sportsBet.owner }}</a>
+        </ion-note>
+      </ion-item>
+
+      <ion-item>
+
+        <ion-grid>
+          <ion-row>
+            <ion-col col-2><b>Tipp</b></ion-col>
+            <ion-col col-3><b>Wetteinsätze</b></ion-col>
+            <ion-col col-3><b>Ihr Einsatz</b></ion-col>
+            <ion-col col-3><b>Wettquote</b></ion-col>
+          </ion-row>
+          <ion-row [ngClass]="{ winner : (sportsBet.winningTip == 1) }">
+            <ion-col col-2>Team 1</ion-col>
+            <ion-col col-3 *ngIf="sportsBet.tipAmounts[0]">{{ sportsBet.tipAmounts[0] }} ETH</ion-col>
+            <ion-col col-3>
+              <ng-container *ngIf="sportsBet.yourBet.tip == 1">{{ sportsBet.yourBet.amount }} ETH</ng-container>
+            </ion-col>
+            <ion-col col-3 *ngIf="sportsBet.odds[0]">1:{{ sportsBet.odds[0] / 100 }}</ion-col>
+          </ion-row>
+          <ion-row [ngClass]="{ winner : (sportsBet.winningTip == 2) }">
+            <ion-col col-2>Team 2</ion-col>
+            <ion-col col-3 *ngIf="sportsBet.tipAmounts[1]">{{ sportsBet.tipAmounts[1] }} ETH</ion-col>
+            <ion-col col-3>
+                <ng-container *ngIf="sportsBet.yourBet.tip == 2">{{ sportsBet.yourBet.amount }} ETH</ng-container>
+              </ion-col>
+            <ion-col col-3 *ngIf="sportsBet.odds[1]">1:{{ sportsBet.odds[1] / 100 }}</ion-col>
+          </ion-row>
+          <ion-row [ngClass]="{ winner : (sportsBet.winningTip == 3) }">
+            <ion-col col-2>Unentschieden</ion-col>
+            <ion-col col-3 *ngIf="sportsBet.tipAmounts[2]">{{ sportsBet.tipAmounts[2] }} ETH</ion-col>
+            <ion-col col-3>
+                <ng-container *ngIf="sportsBet.yourBet.tip == 3">{{ sportsBet.yourBet.amount }} ETH</ng-container>
+              </ion-col>
+            <ion-col col-3 *ngIf="sportsBet.odds[2]">1:{{ sportsBet.odds[2] / 100 }}</ion-col>
+          </ion-row>
+        </ion-grid>
+
+      </ion-item>
+
+      <ion-item>
+        <button *ngIf="sportsBet.state == 0" ion-button (click)="bet()">Tipp abgeben</button>
+        <button *ngIf="sportsBet.state == 0 && isOwner()" ion-button (click)="lockBet()" color="danger">Wette sperren</button>
+        <button *ngIf="sportsBet.state == 1 && isOwner()" ion-button (click)="finalizeBet()" color="danger">Wette abschließen</button>
+        <button *ngIf="sportsBet.state == 2 && sportsBet.winningTip == sportsBet.yourBet.tip && sportsBet.yourBet.amount > 0" ion-button (click)="payout()" color="secondary">Gewinn auszahlen</button>
+
+        <p class="winner" *ngIf="sportsBet.state == 2 && sportsBet.winningTip == sportsBet.yourBet.tip && sportsBet.yourBet.amount > 0">Ihr Gewinn wurde bereits ausbezahlt.</p>
+        <p class="loser" *ngIf="sportsBet.state == 2 && sportsBet.winningTip != sportsBet.yourBet.tip">Leider hat Ihr Tipp nicht gewonnen.</p>
+      </ion-item>
+
+    </ion-list>
+
+  </ion-card>
+
+  
+
+</ion-content>
