@@ -1,0 +1,30 @@
+<ion-header>
+  <ion-navbar>
+    <ion-title>Sports Betting Overview</ion-title>
+
+    <ion-buttons start>
+        <button (click)="openCreateModal()" ion-button icon-only>
+            <ion-icon name="add"></ion-icon> Add new bet
+        </button>
+    </ion-buttons>
+
+  </ion-navbar>
+</ion-header>
+
+<ion-content padding>
+
+    <ion-card>
+        <ion-card-header>
+            <ion-card-title>Newest 5 bets</ion-card-title>
+        </ion-card-header>
+        <ion-list>
+            <ion-item *ngFor="let bet of bets">
+                <b>{{ bet.game }}</b> / bet until: {{ bet.endOfBetting | date:'medium' }}
+                <button (click)="openBet(bet.address)" ion-button item-end icon-left>
+                    <ion-icon icon-start name="open"></ion-icon> Details
+                </button>
+            </ion-item>
+        </ion-list>
+    </ion-card>
+
+</ion-content>

@@ -1,0 +1,77 @@
+
+<ion-header>
+  <ion-navbar>
+    <ion-title>Sports bet detail</ion-title>
+  </ion-navbar>
+</ion-header>
+
+
+<ion-content padding>
+
+    <ion-card>
+        <ion-card-header>
+            {{ bet.game }}
+        </ion-card-header>
+
+        <ion-list>
+          <ion-item>
+            <ion-note item-start>
+              Total: {{ bet.total }} ETH<br>
+              State: {{ canBet() ? 'Betting Phase' : ( isFinalized() ? 'Finalized' : 'Game Phase' ) }}<br>
+              <ng-container *ngIf="canBet()">Bet until: {{ bet.endOfBetting | date:'medium' }}<br></ng-container>
+              Smart contract: <a target="_blank" [href]="'https://ropsten.etherscan.io/address/' + bet.address">{{ bet.address }}</a><br>
+              Owner: <a target="_blank" [href]="'https://ropsten.etherscan.io/address/' + bet.owner">{{ bet.owner }}</a>
+            </ion-note>
+          </ion-item>
+
+          <ion-item>
+
+            <ion-grid>
+              <ion-row>
+                <ion-col col-2><b>Bets</b></ion-col>
+                <ion-col col-3><b>Amounts</b></ion-col>
+                <ion-col col-3><b>Your amount</b></ion-col>
+                <ion-col col-3><b>Odds</b></ion-col>
+              </ion-row>
+              <ion-row [ngClass]="{ winner : (bet.winningTip == 1) }">
+                <ion-col col-2>Team 1</ion-col>
+                <ion-col col-3>{{ bet.tipAmounts[0] }} ETH</ion-col>
+                <ion-col col-3>
+                  <ng-container *ngIf="yourBet.tip == 1">{{ yourBet.amount }} ETH</ng-container>
+                </ion-col>
+                <ion-col col-3 *ngIf="bet.odds[0]">1:{{ bet.odds[0] }}</ion-col>
+              </ion-row>
+              <ion-row [ngClass]="{ winner : (bet.winningTip == 2) }">
+                <ion-col col-2>Team 2</ion-col>
+                <ion-col col-3>{{ bet.tipAmounts[1] }} ETH</ion-col>
+                <ion-col col-3>
+                    <ng-container *ngIf="yourBet.tip == 2">{{ yourBet.amount }} ETH</ng-container>
+                  </ion-col>
+                <ion-col col-3 *ngIf="bet.odds[1]">1:{{ bet.odds[1] }}</ion-col>
+              </ion-row>
+              <ion-row [ngClass]="{ winner : (bet.winningTip == 3) }">
+                <ion-col col-2>Draw</ion-col>
+                <ion-col col-3>{{ bet.tipAmounts[2] }} ETH</ion-col>
+                <ion-col col-3>
+                    <ng-container *ngIf="yourBet.tip == 3">{{ yourBet.amount }} ETH</ng-container>
+                  </ion-col>
+                <ion-col col-3 *ngIf="bet.odds[2]">1:{{ bet.odds[2] }}</ion-col>
+              </ion-row>
+            </ion-grid>
+
+          </ion-item>
+
+          <ion-item>
+            <button *ngIf="canBet()" ion-button (click)="takeABet()">Place a bet</button>
+            <button *ngIf="!canBet() && !isFinalized() && isOwner()" ion-button (click)="finalizeBet()" color="danger">Finalize bet</button>
+            <button *ngIf="isFinalized() && bet.winningTip == yourBet.tip && yourBet.amount > 0" ion-button (click)="payout()" color="secondary">Payout</button>
+
+            <p class="winner" *ngIf="isFinalized() && bet.winningTip == yourBet.tip && yourBet.amount <= 0">Your win was already claimed.</p>
+            <p class="loser" *ngIf="isFinalized() && bet.winningTip != yourBet.tip">Unfortunately your bet didn't win.</p>
+          </ion-item>
+
+        </ion-list>
+
+      </ion-card>
+
+</ion-content>
